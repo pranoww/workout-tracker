@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { sendOtp as sendOtpAPI, verifyOtp as verifyOtpAPI } from "../api/auth";
 
 const RESEND_SECONDS = 60;
 
@@ -36,17 +37,7 @@ export default function AuthPage() {
     setError("");
 
     try {
-      const response = await fetch(`/api/auth/send-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to send OTP.");
-      }
-
+      await sendOtpAPI(email);
       setStep("otp");
       setCountdown(RESEND_SECONDS);
 
@@ -74,16 +65,7 @@ export default function AuthPage() {
     setError("");
 
     try {
-      const response = await fetch(`/api/auth/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: code }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Invalid or expired verification code.");
-      }
+      await verifyOtpAPI(email, code);
 
       // Redirect after successful authentication.
       window.location.href = "/dashboard";
@@ -142,16 +124,7 @@ export default function AuthPage() {
     setError("");
 
     try {
-      const response = await fetch(`/api/auth/send-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Unable to resend the code.");
-      }
+      await sendOtpAPI(email);
 
       setOtp(["", "", "", "", "", ""]);
       setCountdown(RESEND_SECONDS);
@@ -283,7 +256,7 @@ function EmailStep({
         </h2>
 
         <p className="mt-4 leading-6 text-zinc-400">
-          Enter your email and we'll send you a verification code.
+          Enter your email and we&apos;ll send you a verification code.
         </p>
       </div>
 
@@ -327,7 +300,7 @@ function EmailStep({
       </div>
 
       <p className="text-center text-sm leading-6 text-zinc-500">
-        No password required. We'll securely verify your email with a
+        No password required. We&apos;ll securely verify your email with a
         one-time code.
       </p>
 
